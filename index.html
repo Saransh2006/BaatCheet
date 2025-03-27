@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BaatCheet - Hacker Chat</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+<div class="terminal-container">
+    <div class="terminal-header">
+        <span class="terminal-title">BaatCheet Terminal</span>
+        <div class="terminal-controls">
+            <div class="control red"></div>
+            <div class="control yellow"></div>
+            <div class="control green"></div>
+        </div>
+    </div>
+
+    <div id="terminal-output"></div>
+
+    <div class="input-area">
+        <span class="prompt">>_</span>
+        <input id="username" type="text" placeholder="Username" />
+        <input id="message" type="text" placeholder="Type your message..." onkeydown="if(event.key === 'Enter') sendMessage()">
+    </div>
+</div>
+
+<script>
+    const socket = io();
+    const terminal = document.getElementById('terminal-output');
+
+    socket.on('message', (data) => {
+        showMessage(data.username, data.message);
+    });
+
+    function sendMessage() {
+        const username = document.getElementById('username').value || "Anonymous";
+        const message = document.getElementById('message').value;
+
+        if (!message) return;
+
+        socket.emit('message', { username, message });
+        document.getElementById('message').value = '';
+    }
+
+    function showMessage(username, message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('terminal-message');
+
+        messageDiv.innerHTML = `
+            <span class="username">${username}</span>: 
+            <span class="text">${message}</span>
+        `;
+
+        terminal.appendChild(messageDiv);
+
+        // Simulate typing effect
+        typeMessage(messageDiv.querySelector('.text'), message);
+
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function typeMessage(element, message) {
+        element.textContent = "";
+        let i = 0;
+        const interval = setInterval(() => {
+            if (i < message.length) {
+                element.textContent += message[i];
+                i++;
+            } else {
+                clearInterval(interval);
+            }
+        }, 50);
+    }
+</script>
+
+</body>
+</html>
